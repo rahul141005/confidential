@@ -46,6 +46,7 @@ function _disposeActiveDrillSession() {
   if (container) {
     container.classList.remove('drill-results-active');
     container.style.display = 'none';
+    container.innerHTML = '';
   }
 }
 

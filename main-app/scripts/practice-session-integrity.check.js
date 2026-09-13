@@ -244,6 +244,10 @@ if (owns) {
   ok(/drill-session-active/.test(owns), '_engineOwnsScreen covers the body class');
 }
 
+var dispose = fnBody(SESSMGR, '_disposeActiveDrillSession');
+ok(dispose !== null && /container\.innerHTML\s*=\s*''/.test(dispose),
+  'session-manager: disposing a drill clears persistent container markup');
+
 /* The post-activation repaint in paywall.js must stand down when the engine owns the screen. */
 var payCode = stripComments(PAYWALL_SRC).split('\n');
 var payRepaint = payCode.map(function (l, i) { return { line: l, n: i + 1 }; })
