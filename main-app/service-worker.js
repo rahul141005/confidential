@@ -3,7 +3,7 @@
  * Caches all assets for offline use.
  */
 
-const APP_VERSION = 'v296';
+const APP_VERSION = 'v297';
 const CACHE_NAME = 'qr-cache-' + APP_VERSION;   /* derived so the two version strings can never drift (ADR-095) */
 const NET_FIRST_TIMEOUT_MS = 3000;              /* network-first JS/CSS falls back to cache after this on "lie-fi" (ADR-095) */
 
@@ -17,6 +17,7 @@ var ASSETS = [
   './vendor/firebase/firebase-auth-compat.js',
   './vendor/firebase/firebase-firestore-compat.js',
   './vendor/firebase/firebase-messaging-compat.js',
+  './js/diagnostic-logger.js',
   './js/state/storage-registry.js',
   './js/state/store.js',
   /* Localization (ADR-111): core + all three UI catalogs precached so every language works offline;

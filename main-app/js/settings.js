@@ -680,6 +680,20 @@ function initSettingsView() {
   var updateAppBtn = document.getElementById('updateAppBtn');
   if (updateAppBtn) {
     rebind(updateAppBtn, 'click', function () {
+      try {
+        var rawProg = localStorage.getItem('qr_progress') || localStorage.getItem('quant_reflex_progress');
+        var parsedProg = rawProg ? JSON.parse(rawProg) : null;
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('settings', 'updateAppBtn:click', {
+            appVersion: window.QR_APP_VERSION,
+            lastUid: localStorage.getItem('qr_last_uid'),
+            preUpdateTodayAttempted: parsedProg ? parsedProg.todayAttempted : null,
+            preUpdateTodayCorrect: parsedProg ? parsedProg.todayCorrect : null,
+            preUpdateLastActiveDate: parsedProg ? parsedProg.lastActiveDate : null,
+            preUpdateTotalAttempted: parsedProg ? parsedProg.totalAttempted : null
+          });
+        }
+      } catch (_) {}
       updateAppBtn.disabled = true;
       var labelEl = updateAppBtn.querySelector('.settings-btn-label');
       var _origLabel = labelEl ? labelEl.textContent : updateAppBtn.textContent;   /* ADR-162 restore point */

@@ -213,22 +213,47 @@
       } catch (_) { q = ''; }
       try { root.location.href = pathname + q; } catch (_) {}
     };
-    if (root.caches && root.caches.keys) {
-      return root.caches.keys().then(function (keys) {
-        return Promise.all(keys.map(function (k) { return root.caches.delete(k); }));
-      }).then(function () {
-        if (nav && nav.serviceWorker && nav.serviceWorker.getRegistrations) {
-          return nav.serviceWorker.getRegistrations().then(function (regs) {
-            for (var i = 0; i < regs.length; i++) {
-              if (regs[i].waiting) regs[i].waiting.postMessage({ type: 'SKIP_WAITING' });
-              try { regs[i].update(); } catch (_) {}
-            }
-          });
-        }
-      }).then(done, done);
+    /* Flush pending Firestore updates before reload so in-flight work reaches server (Bug D) */
+    var flushPromise = Promise.resolve();
+    try {
+      var fs = root.FirestoreSync || (typeof window !== 'undefined' && window.FirestoreSync);
+      if (fs && typeof fs.flushUpdatesAsync === 'function') {
+        flushPromise = new Promise(function (resolve) {
+          var settled = false;
+          var timer = setTimeout(function () {
+            if (!settled) { settled = true; resolve(); }
+          }, 2000); /* bounded 2s fallback to prevent trapping user */
+          try {
+            fs.flushUpdatesAsync(function () {
+              if (!settled) { settled = true; clearTimeout(timer); resolve(); }
+            });
+          } catch (_) {
+            if (!settled) { settled = true; clearTimeout(timer); resolve(); }
+          }
+        });
+      }
+    } catch (_) {
+      flushPromise = Promise.resolve();
     }
-    done();
-    return Promise.resolve({ applied: true, reason: 'no-cache-api' });
+
+    return flushPromise.then(function () {
+      if (root.caches && root.caches.keys) {
+        return root.caches.keys().then(function (keys) {
+          return Promise.all(keys.map(function (k) { return root.caches.delete(k); }));
+        }).then(function () {
+          if (nav && nav.serviceWorker && nav.serviceWorker.getRegistrations) {
+            return nav.serviceWorker.getRegistrations().then(function (regs) {
+              for (var i = 0; i < regs.length; i++) {
+                if (regs[i].waiting) regs[i].waiting.postMessage({ type: 'SKIP_WAITING' });
+                try { regs[i].update(); } catch (_) {}
+              }
+            });
+          }
+        }).then(done, done);
+      }
+      done();
+      return Promise.resolve({ applied: true, reason: 'no-cache-api' });
+    });
   }
 
   var QRUpdateManager = { init: init, isUpdateAvailable: isUpdateAvailable, applyUpdate: applyUpdate };

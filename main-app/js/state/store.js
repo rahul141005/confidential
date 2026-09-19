@@ -277,6 +277,13 @@ var AppState = (function () {
   var FALLBACK_SURVIVOR_PREFIXES = ['qr_update_', 'qr_pending_writes_'];
 
   function clearAll() {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('app_state', 'clearAll:called', {
+          stack: (new Error().stack || '').split('\n').slice(1, 6).join('\n')
+        });
+      }
+    } catch (_) {}
     if (typeof QRStorage !== 'undefined' && typeof QRStorage.purgeUserScoped === 'function') {
       var out = QRStorage.purgeUserScoped();
       /* ADR-120 (R7): sessionStorage is part of the same ownership model — the purge used to cover

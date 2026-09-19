@@ -194,6 +194,11 @@ function startDrillFromPractice(modeKey, category, categoryLabel, opts) {
   if (opts.skipStartScreen === true) config.skipStartScreen = true;
 
   config.onFinish = function (view) {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('PRACTICE', 'config.onFinish', 'enter', { view: view });
+      }
+    } catch (_) {}
     _disposeActiveDrillSession();
     if (view === 'practice') {
       _resetPracticeUiToModes();
@@ -201,6 +206,15 @@ function startDrillFromPractice(modeKey, category, categoryLabel, opts) {
     Router.showView(view);
   };
 
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', 'startDrillFromPractice', 'dom_switch_to_drill', {
+        modeKey: opts.modeKey,
+        drillContainerDisplayBefore: drillContainer.style.display,
+        modeSelectDisplayBefore: modeSelect.style.display
+      });
+    }
+  } catch (_) {}
   modeSelect.style.display = 'none';
   categorySelect.style.display = 'none';
   if (customPracticeConfig) customPracticeConfig.style.display = 'none';
@@ -288,6 +302,13 @@ function startMockFromPractice(examId) {
    giveaway. The cross-session Review Mistakes mode stays premium. Skips the pre-session start screen:
    the user committed by tapping the action. */
 function startSessionReview(wrongQuestions) {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', 'startSessionReview', 'called', {
+        questionCount: Array.isArray(wrongQuestions) ? wrongQuestions.length : 0
+      });
+    }
+  } catch (_) {}
   if (!Array.isArray(wrongQuestions) || !wrongQuestions.length) return;
   if (typeof hasReachedDailyLimit === 'function' && hasReachedDailyLimit()) { showPaywall('daily_limit'); return; }
   var drillContainer = document.getElementById('drillContainer');
@@ -366,6 +387,11 @@ function _clampSetToDailyAllowance(set, isPremium) {
 
 /* ---- DI Set launcher (ADR-078): one shared chart + linked questions, served by the same drill engine ---- */
 function startDiSet(category) {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', 'startDiSet', 'called', { category: category || null });
+    }
+  } catch (_) {}
   if (typeof DISetEngine === 'undefined' || !DISetEngine.generateSet) {
     /* engine not loaded → degrade gracefully to a normal DI focus drill */
     return startDrillFromPractice('focus', category || 'di-bar', 'Data Interpretation');
@@ -420,6 +446,11 @@ function startDiSet(category) {
 
 /* ---- LR Set launcher (ADR-079): one shared seating/floor scenario + linked MCQs, served by the same set-mode ---- */
 function startLrSet(category) {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', 'startLrSet', 'called', { category: category || null });
+    }
+  } catch (_) {}
   if (typeof LRSetEngine === 'undefined' || !LRSetEngine.generateSet) {
     return startDrillFromPractice('focus', category || 'lr-syllogism', 'Logical Reasoning');
   }
@@ -469,11 +500,24 @@ function startLrSet(category) {
 }
 
 function _startPracticeEngine(drillContainer, config) {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', '_startPracticeEngine', 'instantiating', {
+        previousEngineExists: !!_activeDrillEngine,
+        mode: config && config.mode
+      });
+    }
+  } catch (_) {}
   if (_activeDrillEngine) {
     _activeDrillEngine.cleanup();
   }
   var engine = createDrillEngine(drillContainer, config);
   _activeDrillEngine = engine;
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('ENGINE', '_startPracticeEngine', 'engine_assigned');
+    }
+  } catch (_) {}
   engine.start();
 }
 
@@ -546,6 +590,11 @@ function _renderDailyQuota(progress) {
  */
 function initPracticeView() {
   Router.onShow('practice', function () {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('PRACTICE', 'Router.onShow(practice)', 'start');
+      }
+    } catch (_) {}
     _disposeActiveDrillSession();
 
     /* Daily quota indicator (free users only) */
@@ -554,6 +603,11 @@ function initPracticeView() {
     }
 
     _resetPracticeUiToModes();
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('PRACTICE', 'Router.onShow(practice)', 'completed');
+      }
+    } catch (_) {}
   });
 
   Router.onInit('practice', function () {
@@ -572,9 +626,14 @@ function initPracticeView() {
     var modeCards = modeSelect.querySelectorAll('.mode-card');
     for (var i = 0; i < modeCards.length; i++) {
       modeCards[i].addEventListener('click', function () {
+        var modeKey = this.getAttribute('data-mode');
+        try {
+          if (typeof QRDiagnostic !== 'undefined') {
+            QRDiagnostic.log('PRACTICE', 'mode_card_click', 'clicked', { modeKey: modeKey });
+          }
+        } catch (_) {}
         if (!_tryPracticeAction()) return;
         SoundEngine.play('settingsToggle');
-        var modeKey = this.getAttribute('data-mode');
         if (modeKey === 'custom') {
           if (!canAccessFeature('custom_training')) { showPaywall('custom_training'); return; }
           _customPracticeActive = true;

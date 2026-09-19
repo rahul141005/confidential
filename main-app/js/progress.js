@@ -42,6 +42,16 @@ function loadProgress() {
       /* Check if date has changed — reset today counters */
       var today = new Date().toDateString();
       if (data.lastActiveDate !== today) {
+        try {
+          if (typeof QRDiagnostic !== 'undefined') {
+            QRDiagnostic.log('progress', 'loadProgress:date_rollover_reset', {
+              oldDate: data.lastActiveDate,
+              newDate: today,
+              oldTodayAttempted: data.todayAttempted,
+              oldTodayCorrect: data.todayCorrect
+            });
+          }
+        } catch (_) {}
         /* Check daily streak continuity */
         if (data.lastActiveDate) {
           var last = new Date(data.lastActiveDate);
@@ -98,12 +108,29 @@ function loadProgress() {
     responseTimes: [],
     dailyHistory: {}
   };
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('progress', 'loadProgress:returning_defaults', {
+        reason: 'no_stored_data_or_parse_failure'
+      });
+    }
+  } catch (_) {}
   _progressCache = defaults;
   return defaults;
 }
 
 /** Persist progress to localStorage and sync to Firestore */
 function saveProgress(data) {
+  try {
+    if (typeof QRDiagnostic !== 'undefined' && data) {
+      QRDiagnostic.log('progress', 'saveProgress', {
+        todayAttempted: data.todayAttempted,
+        todayCorrect: data.todayCorrect,
+        lastActiveDate: data.lastActiveDate,
+        totalAttempted: data.totalAttempted
+      });
+    }
+  } catch (_) {}
   _progressCache = data; /* Update cache so next loadProgress() is instant */
   try {
     if (typeof AppState !== 'undefined') {
@@ -157,6 +184,15 @@ function recordAnswer(correct, category, questionData, responseTime, meta) {
   p.lastActiveMs = Date.now();   /* sortable last-active (ADR-029) — backs coaching roster order + the inactive-sweep range query that toDateString silently broke */
   p.totalAttempted++;
   p.todayAttempted = (p.todayAttempted || 0) + 1;
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('progress', 'recordAnswer:increment', {
+        todayAttempted: p.todayAttempted,
+        totalAttempted: p.totalAttempted,
+        correct: !!correct
+      });
+    }
+  } catch (_) {}
 
   if (correct) {
     p.totalCorrect++;

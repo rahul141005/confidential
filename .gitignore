@@ -38,3 +38,6 @@ _research_*/
 scratch/
 .ideavo/project
 *.log
+.codex/
+.playwright-mcp/
+opencode.json

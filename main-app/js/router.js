@@ -70,7 +70,53 @@ var Router = (function () {
       var _drillOwnsScreen = (typeof _engineOwnsScreen === 'function')
         ? _engineOwnsScreen()
         : (typeof _drillSessionActive !== 'undefined' && _drillSessionActive);
-      if (!_drillOwnsScreen) {
+      try {
+        var _ms = document.getElementById('modeSelect');
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('ROUTER', '_cleanupOverlays', 'drillContainer_decision', {
+            targetViewId: targetViewId,
+            drillContainerFound: !!_drillContainer,
+            _activeDrillEngine: typeof _activeDrillEngine !== 'undefined' ? !!_activeDrillEngine : null,
+            _drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : null,
+            _engineOwnsScreenResult: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : null,
+            _drillOwnsScreen: _drillOwnsScreen,
+            drillContainerDisplay: _drillContainer ? _drillContainer.style.display : null,
+            drillContainerClassName: _drillContainer ? _drillContainer.className : null,
+            modeSelectDisplay: _ms ? _ms.style.display : null,
+            bodyClassName: document.body ? document.body.className : '',
+            htmlClassName: document.documentElement ? document.documentElement.className : '',
+            willHideContainer: !_drillOwnsScreen
+          });
+        }
+      } catch (_) {}
+      /* Bug A Fix: Browser Back from Preview leaves drillContainer stuck because
+         _engineOwnsScreen() returns true (engine was instantiated for Preview).
+         When navigating to 'practice' and the engine owns the screen, check if
+         we're on the Preview start screen (NOT the Results card). If so, safely
+         dispose the engine and restore modeSelect. The .drill-results-active
+         guard ensures the Results card is NEVER torn down by this path. */
+      if (_drillOwnsScreen && (typeof _drillSessionActive === 'undefined' || !_drillSessionActive) &&
+          targetViewId === 'practice' &&
+          !_drillContainer.classList.contains('drill-results-active') &&
+          _drillContainer.querySelector('.drill-start')) {
+        try {
+          if (typeof QRDiagnostic !== 'undefined') {
+            QRDiagnostic.log('ROUTER', '_cleanupOverlays', 'bugA_preview_popstate_dispose', {
+              targetViewId: targetViewId,
+              hasResultsActive: _drillContainer.classList.contains('drill-results-active'),
+              hasDrillStart: !!_drillContainer.querySelector('.drill-start')
+            });
+          }
+        } catch (_) {}
+        if (typeof _disposeActiveDrillSession === 'function') {
+          _disposeActiveDrillSession();
+        }
+        /* _disposeActiveDrillSession hides drillContainer and clears the engine.
+           Restore modeSelect so the user sees the practice mode cards. */
+        var _modeSelect = document.getElementById('modeSelect');
+        if (_modeSelect) _modeSelect.style.display = 'block';
+        /* Engine is now disposed — skip the original _drillOwnsScreen branch */
+      } else if (!_drillOwnsScreen) {
         _drillContainer.classList.remove('drill-results-active');
         _drillContainer.style.display = 'none';
       }
@@ -135,6 +181,15 @@ var Router = (function () {
   }
 
   function showView(viewId, params) {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('ROUTER', 'showView', 'start', {
+          currentView: currentView,
+          targetView: viewId,
+          params: params
+        });
+      }
+    } catch (_) {}
 
     /* ADR-107 hardening: a pending one-shot drill resume hook (window.__qrResumeAfterUpgrade, set when a free user
        pauses at the daily cap) is only valid within an uninterrupted paused session. Any view navigation invalidates
@@ -184,11 +239,17 @@ var Router = (function () {
     }
 
     if (viewInitCallbacks[viewId]) {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('ROUTER', 'viewInitCallbacks', 'invoking', { viewId: viewId });
+      } catch (_) {}
       viewInitCallbacks[viewId](params);
       delete viewInitCallbacks[viewId];
     }
 
     if (afterShowCallbacks[viewId]) {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('ROUTER', 'afterShowCallbacks', 'invoking', { viewId: viewId, count: afterShowCallbacks[viewId].length });
+      } catch (_) {}
       for (var cb = 0; cb < afterShowCallbacks[viewId].length; cb++) {
         afterShowCallbacks[viewId][cb](params);
       }
@@ -208,8 +269,15 @@ var Router = (function () {
     window.scrollTo(0, 0);
     var _scrollContainer = document.querySelector('.container');
     if (_scrollContainer) _scrollContainer.scrollTop = 0;
-    
 
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('ROUTER', 'showView', 'completed', {
+          activeView: viewId,
+          hash: window.location.hash
+        });
+      }
+    } catch (_) {}
   }
 
   function getCurrentView() {
@@ -236,6 +304,15 @@ var Router = (function () {
     }
 
     window.addEventListener('popstate', function () {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('ROUTER', 'popstate', 'received', {
+            currentHash: window.location.hash,
+            _drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : null
+          });
+        }
+      } catch (_) {}
+
       /* Close any open info modals on navigation */
       if (typeof _closeAllInfoModals === 'function') _closeAllInfoModals();
 

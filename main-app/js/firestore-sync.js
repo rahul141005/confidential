@@ -529,6 +529,15 @@ var FirestoreSync = (function () {
        Preserve compatibility and avoid resetting existing sessions. */
     try {
       var lastUid = localStorage.getItem('qr_last_uid');
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('firestore_sync', 'loadFromFirestore:check_uid', {
+            lastUid: lastUid,
+            currentUserId: currentUserId,
+            willPurge: !!(lastUid && lastUid !== currentUserId)
+          });
+        }
+      } catch (_) {}
       if (lastUid && lastUid !== currentUserId) {
         _clearUserLocalStorage();
         /* ADR-160 — THIS IS THE SECOND PURGE SITE, AND IT WAS NOT RAISING THE ADR-152 GUARD.
@@ -562,6 +571,16 @@ var FirestoreSync = (function () {
           if (typeof AppState !== 'undefined') AppState.setSettings(data.settings);
         }
         if (data.stats) {
+          try {
+            if (typeof QRDiagnostic !== 'undefined') {
+              QRDiagnostic.log('firestore_sync', 'loadFromFirestore:hydrate_stats', {
+                remoteTodayAttempted: data.stats.todayAttempted,
+                remoteTodayCorrect: data.stats.todayCorrect,
+                remoteLastActiveDate: data.stats.lastActiveDate,
+                remoteTotalAttempted: data.stats.totalAttempted
+              });
+            }
+          } catch (_) {}
           /* F-M8 sync integrity: MERGE the cloud mistake archive with any local (e.g. offline / guest) mistakes by
              stable id — union, newest-per-id wins, learning-state OR-merged — so hydration never duplicates or drops a
              mistake. Guarded + try/catch: on any issue the wholesale cloud value is used, exactly as before. */
@@ -572,6 +591,38 @@ var FirestoreSync = (function () {
               data.stats.mistakes = QRMistakeArchive.mergeMistakes(_localM, data.stats.mistakes);
             }
           } catch (_) {}
+
+          /* Same-day quota reconciliation (Phase 6 / Bug D):
+             Prevent older remote daily quotas from erasing valid local same-day progress.
+             Only applies when local progress belongs to the authenticated user and falls
+             within today's calendar date. Never carry forward yesterday's counts. */
+          try {
+            var _todayStr = new Date().toDateString();
+            var _localProg = (typeof AppState !== 'undefined' && AppState.getProgress) ? AppState.getProgress() : null;
+            if (_localProg && !_purgedAwaitingHydration) {
+              var _localIsToday = (_localProg.lastActiveDate === _todayStr);
+              var _remoteIsToday = (data.stats.lastActiveDate === _todayStr);
+
+              if (_localIsToday && _remoteIsToday) {
+                var _locAtt = Math.max(0, parseInt(_localProg.todayAttempted) || 0);
+                var _remAtt = Math.max(0, parseInt(data.stats.todayAttempted) || 0);
+                data.stats.todayAttempted = Math.max(_locAtt, _remAtt);
+
+                var _locCorr = Math.max(0, parseInt(_localProg.todayCorrect) || 0);
+                var _remCorr = Math.max(0, parseInt(data.stats.todayCorrect) || 0);
+                data.stats.todayCorrect = Math.max(_locCorr, _remCorr);
+              } else if (_localIsToday && !_remoteIsToday) {
+                // Local user practiced today, but remote document has not yet recorded activity for today
+                data.stats.lastActiveDate = _todayStr;
+                data.stats.todayAttempted = Math.max(0, parseInt(_localProg.todayAttempted) || 0);
+                data.stats.todayCorrect = Math.max(0, parseInt(_localProg.todayCorrect) || 0);
+              }
+              if (data.stats.todayCorrect > data.stats.todayAttempted) {
+                data.stats.todayCorrect = data.stats.todayAttempted;
+              }
+            }
+          } catch (_) {}
+
           if (typeof AppState !== 'undefined') AppState.setProgress(data.stats);
           /* Invalidate progress.js cache so next loadProgress() reads fresh Firestore data */
           if (typeof invalidateProgressCache === 'function') invalidateProgressCache();

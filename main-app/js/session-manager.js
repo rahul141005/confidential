@@ -33,6 +33,14 @@ var _exitDialogHandle = null;
  * converge on the same Practice refresh.
  */
 function _disposeActiveDrillSession() {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('SESSION', '_disposeActiveDrillSession', 'start', {
+        activeEngineExists: !!_activeDrillEngine,
+        drillSessionActive: _drillSessionActive
+      });
+    }
+  } catch (_) {}
   var engine = _activeDrillEngine;
   _activeDrillEngine = null;
   if (engine && typeof engine.cleanup === 'function') {
@@ -48,6 +56,11 @@ function _disposeActiveDrillSession() {
     container.style.display = 'none';
     container.innerHTML = '';
   }
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('SESSION', '_disposeActiveDrillSession', 'completed');
+    }
+  } catch (_) {}
 }
 
 /**
@@ -57,6 +70,11 @@ function _disposeActiveDrillSession() {
  * - add body class for CSS adjustments (numpad positioning)
  */
 function _enterDrillSession() {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('SESSION', '_enterDrillSession', 'enter');
+    }
+  } catch (_) {}
   _drillSessionActive = true;
   var nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = 'none';
@@ -72,6 +90,11 @@ function _enterDrillSession() {
  * - hide custom numpad and clean up input state
  */
 function _exitDrillSession() {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('SESSION', '_exitDrillSession', 'enter');
+    }
+  } catch (_) {}
   _drillSessionActive = false;
   var nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = '';
@@ -213,11 +236,13 @@ function showExitSessionDialog(onConfirm, customOptions) {
   }
 
   cancelBtn.onclick = function () {
+    try { if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('session_manager', 'showExitSessionDialog:cancel_click', { action: 'keep_going' }); } catch (_) {}
     closeDialog();
     /* Session continues — do nothing else */
   };
 
   confirmBtn.onclick = function () {
+    try { if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('session_manager', 'showExitSessionDialog:confirm_click', { action: 'end_session' }); } catch (_) {}
     _frozenEngine = null;   /* confirmed: performExit() tears the engine down — never resume its clocks */
     closeDialog();
     onConfirm();

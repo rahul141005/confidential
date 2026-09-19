@@ -32,6 +32,18 @@
  * @returns {object} engine with .start() and .cleanup() methods
  */
 function createDrillEngine(container, opts) {
+  var _engineId = 'engine_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('drill_engine', 'createDrillEngine', {
+        engineId: _engineId,
+        mode: opts.mode || 'Drill',
+        count: opts.count || 10,
+        category: opts.category || null,
+        reviewMode: !!opts.reviewMode
+      });
+    }
+  } catch (_) {}
   var count = opts.count || 10;
   var timeLimit = opts.timeLimitSec || null;
   var perQLimit = opts.perQuestionSec || null;
@@ -266,6 +278,15 @@ function createDrillEngine(container, opts) {
       '</div>';
     }).join('');
 
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'renderStart:preview_mount', {
+          engineId: _engineId,
+          containerId: container ? container.id : null,
+          display: container ? container.style.display : null
+        });
+      }
+    } catch (_) {}
     container.innerHTML =
       '<div class="card center-content drill-start">' +
         '<div class="drill-start-badge" aria-hidden="true">' + badge.icon + '</div>' +
@@ -281,17 +302,77 @@ function createDrillEngine(container, opts) {
     var nav = document.querySelector('.bottom-nav');
     if (nav) nav.style.display = 'none';
     container.querySelector('#startBtn').addEventListener('click', begin);
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'startBackBtn:listener_registered', { engineId: _engineId });
+      }
+    } catch (_) {}
     container.querySelector('#startBackBtn').addEventListener('click', function () {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'startBackBtn:click', {
+            engineId: _engineId,
+            hasOnFinish: typeof onFinish === 'function',
+            beforeCleanup: {
+              activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+              drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+              engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+            }
+          });
+        }
+      } catch (_) {}
       cleanup();
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'startBackBtn:after_cleanup', {
+            engineId: _engineId,
+            activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+            drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+            engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+          });
+        }
+      } catch (_) {}
       _exitDrillSession();
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'startBackBtn:after_exitDrillSession', {
+            engineId: _engineId,
+            activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+            drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+            engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+          });
+        }
+      } catch (_) {}
       if (typeof FirestoreSync !== 'undefined') {
         FirestoreSync.endDrillBatch();
       }
       if (onFinish) {
+        try {
+          if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('drill_engine', 'startBackBtn:invoking_onFinish', { engineId: _engineId });
+        } catch (_) {}
         onFinish('practice');
       } else {
+        try {
+          if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('drill_engine', 'startBackBtn:invoking_router_showView', { engineId: _engineId });
+        } catch (_) {}
         Router.showView('practice');
       }
+      setTimeout(function () {
+        try {
+          var dc = document.getElementById('drillContainer');
+          var ms = document.getElementById('modeSelect');
+          if (typeof QRDiagnostic !== 'undefined') {
+            QRDiagnostic.log('drill_engine', 'startBackBtn:delayed_check_100ms', {
+              drillContainerDisplay: dc ? dc.style.display : null,
+              drillContainerHTMLSnippet: dc ? dc.innerHTML.slice(0, 50) : null,
+              modeSelectDisplay: ms ? ms.style.display : null,
+              activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+              drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+              engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+            });
+          }
+        } catch (_) {}
+      }, 100);
     });
   }
 
@@ -579,21 +660,88 @@ function createDrillEngine(container, opts) {
     var _drillExitBtn = container.querySelector('#drillExitBtn');
     if (_drillExitBtn) {
       _drillExitBtn.addEventListener('click', function () {
+        try {
+          if (typeof QRDiagnostic !== 'undefined') {
+            QRDiagnostic.log('drill_engine', 'drillExitBtn:click', {
+              engineId: _engineId,
+              current: current,
+              count: count,
+              activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+              drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined
+            });
+          }
+        } catch (_) {}
+
         function performExit() {
+          try {
+            if (typeof QRDiagnostic !== 'undefined') {
+              QRDiagnostic.log('drill_engine', 'performExit:start', {
+                engineId: _engineId,
+                activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+                drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+                engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+              });
+            }
+          } catch (_) {}
           cleanup();
+          try {
+            if (typeof QRDiagnostic !== 'undefined') {
+              QRDiagnostic.log('drill_engine', 'performExit:after_cleanup', {
+                engineId: _engineId,
+                activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+                drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+                engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+              });
+            }
+          } catch (_) {}
           _exitDrillSession();
+          try {
+            if (typeof QRDiagnostic !== 'undefined') {
+              QRDiagnostic.log('drill_engine', 'performExit:after_exitDrillSession', {
+                engineId: _engineId,
+                activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+                drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+                engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+              });
+            }
+          } catch (_) {}
           /* End Firestore batch that was started in begin() */
           if (typeof FirestoreSync !== 'undefined') {
             FirestoreSync.endDrillBatch();
           }
           if (onFinish) {
+            try {
+              if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('drill_engine', 'performExit:invoking_onFinish', { engineId: _engineId });
+            } catch (_) {}
             onFinish('practice');
           } else {
+            try {
+              if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('drill_engine', 'performExit:invoking_router_showView', { engineId: _engineId });
+            } catch (_) {}
             Router.showView('practice');
           }
+          setTimeout(function () {
+            try {
+              var dc = document.getElementById('drillContainer');
+              var ms = document.getElementById('modeSelect');
+              if (typeof QRDiagnostic !== 'undefined') {
+                QRDiagnostic.log('drill_engine', 'performExit:delayed_check_100ms', {
+                  drillContainerDisplay: dc ? dc.style.display : null,
+                  drillContainerHTMLSnippet: dc ? dc.innerHTML.slice(0, 50) : null,
+                  modeSelectDisplay: ms ? ms.style.display : null,
+                  activeEngine: typeof _activeDrillEngine !== 'undefined' ? (_activeDrillEngine ? (_activeDrillEngine._engineId || true) : null) : undefined,
+                  drillSessionActive: typeof _drillSessionActive !== 'undefined' ? _drillSessionActive : undefined,
+                  engineOwnsScreen: typeof _engineOwnsScreen === 'function' ? _engineOwnsScreen() : undefined
+                });
+              }
+            } catch (_) {}
+          }, 100);
         }
 
         if (typeof showExitSessionDialog === 'function') {
+          try {
+            if (typeof QRDiagnostic !== 'undefined') QRDiagnostic.log('drill_engine', 'drillExitBtn:opening_dialog', { engineId: _engineId });
+          } catch (_) {}
           showExitSessionDialog(performExit);
         } else {
           console.error('[DrillEngine] showExitSessionDialog missing. Exiting automatically.');
@@ -981,24 +1129,81 @@ function createDrillEngine(container, opts) {
     /* Replace submit with next */
     var submitBtn = ui.submitBtnEl;
     submitBtn.style.display = '';   /* MCQ hid it pre-answer; reveal it now as the Next button (no-op for numeric) */
-    submitBtn.textContent = current + 1 < count ? 'Next →' : 'View Results';
-    /* Block next-question for 350ms to prevent carry-over numpad taps */
-    _nextReady = false;
-    _nextGuardTimer = setTimeout(function () {
+    var isFinalQuestion = current + 1 >= count;
+    var _btnText = isFinalQuestion ? 'View Results' : 'Next →';
+    submitBtn.textContent = _btnText;
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'submitBtn:text_changed', {
+          engineId: _engineId,
+          buttonText: _btnText,
+          current: current,
+          count: count,
+          isFinalQuestion: isFinalQuestion
+        });
+      }
+    } catch (_) {}
+
+    if (isFinalQuestion) {
+      /* Bug C Fix: On the final question, View Results is immediately actionable.
+         Carry-over tap protection is only needed between questions, not on the terminal screen. */
       _nextReady = true;
-      /* Pulse the Next button after the guard clears to draw attention */
-      submitBtn.classList.add('next-btn-pulse');
-      setTimeout(function () { submitBtn.classList.remove('next-btn-pulse'); }, 600);
-    }, 350);
+    } else {
+      /* Block next-question for 350ms to prevent carry-over numpad taps */
+      _nextReady = false;
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'submitBtn:guard_engaged', { engineId: _engineId, durationMs: 350, nextReady: _nextReady });
+        }
+      } catch (_) {}
+      _nextGuardTimer = setTimeout(function () {
+        _nextReady = true;
+        try {
+          if (typeof QRDiagnostic !== 'undefined') {
+            QRDiagnostic.log('drill_engine', 'submitBtn:guard_cleared', { engineId: _engineId, nextReady: _nextReady });
+          }
+        } catch (_) {}
+        /* Pulse the Next button after the guard clears to draw attention */
+        submitBtn.classList.add('next-btn-pulse');
+        setTimeout(function () { submitBtn.classList.remove('next-btn-pulse'); }, 600);
+      }, 350);
+    }
 
     /* Auto-advance logic for quick reflex modes */
     if (!isDuel && autoAdvance && correct) {
-      _nextReady = false;
-      _autoAdvanceTimer = setTimeout(nextQuestion, 600);
+      if (!isFinalQuestion) {
+        _nextReady = false;
+      }
+      _autoAdvanceTimer = setTimeout(function () {
+        _nextReady = true;
+        nextQuestion();
+      }, 600);
     }
     
     submitBtn.onclick = function () {
-      if (!_nextReady) return; /* guard against carry-over taps */
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'submitBtn:click', {
+            engineId: _engineId,
+            current: current,
+            count: count,
+            buttonText: submitBtn.textContent,
+            nextReady: _nextReady,
+            isFinalQuestion: isFinalQuestion,
+            blocked: !isFinalQuestion && !_nextReady
+          });
+        }
+      } catch (_) {}
+      if (isFinalQuestion) {
+        /* Prevent double-finish from rapid clicks on View Results */
+        if (_isFinished) return;
+        submitBtn.disabled = true;
+        _nextReady = true;
+        if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
+        nextQuestion();
+        return;
+      }
+      if (!_nextReady) return; /* guard against carry-over taps on non-final questions */
       nextQuestion();
     };
 
@@ -1132,6 +1337,16 @@ function createDrillEngine(container, opts) {
   }
 
   function nextQuestion() {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'nextQuestion:call', {
+          engineId: _engineId,
+          current: current,
+          count: count,
+          nextReady: _nextReady
+        });
+      }
+    } catch (_) {}
     /* Guard against carry-over taps during transition debounce */
     if (!_nextReady) return;
     _nextReady = false; /* Immediately lock to prevent double-advance */
@@ -1142,6 +1357,15 @@ function createDrillEngine(container, opts) {
     if (_nextGuardTimer) { clearTimeout(_nextGuardTimer); _nextGuardTimer = null; }
     current++;
     if (current < count) {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'nextQuestion:advance', {
+            engineId: _engineId,
+            newIndex: current,
+            count: count
+          });
+        }
+      } catch (_) {}
       /* Adaptive: recompute difficulty and generate a fresh question for next slot */
       if (adaptiveMode && !preloadedQuestions && !reviewMode) {
         var newDiff = _computeAdaptiveDifficulty();
@@ -1172,6 +1396,15 @@ function createDrillEngine(container, opts) {
       }
       renderQuestion();
     } else {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'nextQuestion:deck_complete_invoke_finish', {
+            engineId: _engineId,
+            current: current,
+            count: count
+          });
+        }
+      } catch (_) {}
       if (adaptiveMode) _clearAdaptiveOverride();
       finish();
     }
@@ -1257,7 +1490,25 @@ function createDrillEngine(container, opts) {
   }
 
   function finish() {
-    if (_isFinished) return; /* ADR-087: idempotent — guards a global-timer-expiry vs last-question race re-running recording/results */
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'finish:call', {
+          engineId: _engineId,
+          alreadyFinished: _isFinished,
+          current: current,
+          count: count,
+          score: score
+        });
+      }
+    } catch (_) {}
+    if (_isFinished) {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'finish:already_finished_ignored', { engineId: _engineId });
+        }
+      } catch (_) {}
+      return; /* ADR-087: idempotent — guards a global-timer-expiry vs last-question race re-running recording/results */
+    }
     _isFinished = true;
     cleanup();
     _exitDrillSession();
@@ -1523,6 +1774,16 @@ function createDrillEngine(container, opts) {
         '<button class="btn-secondary drill-next-secondary" type="button" id="actPractice">' + QRI18n.t('drill.backToPractice') + '</button>' +
       '</div>';
 
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'finish:rendering_results_card', {
+          engineId: _engineId,
+          containerId: container ? container.id : null,
+          score: score,
+          count: count
+        });
+      }
+    } catch (_) {}
     container.innerHTML =
       '<div class="card center-content fade-in" role="status" aria-live="polite">' +
         '<h2 tabindex="-1" id="drillResultsHeading">' + QRI18n.t('drill.sessionComplete') + '</h2>' +
@@ -1574,6 +1835,14 @@ function createDrillEngine(container, opts) {
 
     /* Next-action wiring (ADR-089): Continue Learning (primary) + Back to Practice (secondary). */
     var _backToPractice = function () {
+      try {
+        if (typeof QRDiagnostic !== 'undefined') {
+          QRDiagnostic.log('drill_engine', 'actPractice:click', {
+            engineId: _engineId,
+            hasOnFinish: typeof onFinish === 'function'
+          });
+        }
+      } catch (_) {}
       if (onFinish) onFinish('practice', _finishResults);
       else Router.showView('practice');
     };
@@ -1791,6 +2060,17 @@ function createDrillEngine(container, opts) {
 
   /* ---- cleanup timers ---- */
   function cleanup() {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'cleanup:call', {
+          engineId: _engineId,
+          isFinished: _isFinished,
+          paused: _paused,
+          current: current,
+          count: count
+        });
+      }
+    } catch (_) {}
     if (overallTimer) { clearInterval(overallTimer); overallTimer = null; }
     if (perQTimer) { clearInterval(perQTimer); perQTimer = null; }
     /* Cancel any pending post-answer transition timers so they can't fire nextQuestion/finish after teardown. */
@@ -1825,6 +2105,16 @@ function createDrillEngine(container, opts) {
   }
 
   function begin() {
+    try {
+      if (typeof QRDiagnostic !== 'undefined') {
+        QRDiagnostic.log('drill_engine', 'begin:call', {
+          engineId: _engineId,
+          beginStarted: beginStarted,
+          current: current,
+          count: count
+        });
+      }
+    } catch (_) {}
     if (beginStarted) return;
     beginStarted = true;
     /* ADR-151 — THE SESSION STARTS HERE, NOT WHEN THE ENGINE IS CONSTRUCTED. start() renders the
@@ -2006,6 +2296,7 @@ function createDrillEngine(container, opts) {
         renderStart();
       }
     },
-    cleanup: cleanup
+    cleanup: cleanup,
+    _engineId: _engineId
   };
 }

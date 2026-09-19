@@ -246,6 +246,11 @@ function _resetCustomPracticeState() {
 /* ---- Practice UI Reset ---- */
 
 function _resetPracticeUiToModes() {
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', '_resetPracticeUiToModes', 'start');
+    }
+  } catch (_) {}
   _customPracticeActive = false;
   _focusModeActive = false;
   _focusSelectedCategory = null;
@@ -271,4 +276,9 @@ function _resetPracticeUiToModes() {
   _resetCustomPracticeState();
   var limitBanner = document.querySelector('.daily-limit-banner');
   if (limitBanner && limitBanner.parentNode) limitBanner.parentNode.removeChild(limitBanner);
+  try {
+    if (typeof QRDiagnostic !== 'undefined') {
+      QRDiagnostic.log('PRACTICE', '_resetPracticeUiToModes', 'completed');
+    }
+  } catch (_) {}
 }
