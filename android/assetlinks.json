@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.quantreflex.app",
+        "sha256_cert_fingerprints": ["0C:7A:3B:2C:02:4B:BB:7C:FD:E3:43:D4:32:97:26:C6:1E:53:AE:6C:21:A8:ED:FB:90:5B:3A:DE:EA:E5:C6:E1"]
+      }
+    }]
