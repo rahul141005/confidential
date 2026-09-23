@@ -41,3 +41,17 @@ scratch/
 .codex/
 .playwright-mcp/
 opencode.json
+
+# Android signing & credentials
+*.keystore
+*.jks
+signing-key-info.txt
+signingKey.keystore
+
+# Android binaries
+*.apk
+*.aab
+
+# Legacy local Android packaging directories
+android/
+QuantReflex play/
