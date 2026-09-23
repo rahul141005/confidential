@@ -1611,7 +1611,7 @@
       accuracyShort: 'अचूकता',
       speedShort: 'वेग',
       duelCta: 'तुम्ही याहून वेगाने सोडवू शकता का?',
-      fallbackText: 'मी QuantReflex वर {acc}% अचूकता आणि {speed}/100 Speed Score मिळवला 🔥 तुमची Speed Aptitude वाढवा: https://www.quantreflex.app'
+      fallbackText: 'मी QuantReflex वर {acc}% अचूकता आणि {speed}/100 Speed Score मिळवला 🔥 तुमची Speed Aptitude वाढवा: https://quantreflex.app'
     },
 
     report: {

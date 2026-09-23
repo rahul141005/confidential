@@ -1623,7 +1623,7 @@
       accuracyShort: 'ACCURACY',
       speedShort: 'SPEED',
       duelCta: 'Think you can solve faster?',
-      fallbackText: 'I scored {acc}% accuracy with a Speed Score of {speed}/100 on QuantReflex 🔥 Train your Speed Aptitude: https://www.quantreflex.app'
+      fallbackText: 'I scored {acc}% accuracy with a Speed Score of {speed}/100 on QuantReflex 🔥 Train your Speed Aptitude: https://quantreflex.app'
     },
 
     report: {

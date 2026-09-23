@@ -1611,7 +1611,7 @@
       accuracyShort: 'सटीकता',
       speedShort: 'गति',
       duelCta: 'क्या आप इससे तेज़ हल कर सकते हैं?',
-      fallbackText: 'मैंने QuantReflex पर {acc}% सटीकता और {speed}/100 Speed Score हासिल किया 🔥 अपनी Speed Aptitude निखारें: https://www.quantreflex.app'
+      fallbackText: 'मैंने QuantReflex पर {acc}% सटीकता और {speed}/100 Speed Score हासिल किया 🔥 अपनी Speed Aptitude निखारें: https://quantreflex.app'
     },
 
     report: {

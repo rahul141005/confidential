@@ -394,7 +394,7 @@ var ShareService = (function () {
     /* URL */
     ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.font = '20px ' + FONT;
-    ctx.fillText('www.quantreflex.app', W / 2, y);
+    ctx.fillText('quantreflex.app', W / 2, y);
     y += 44; /* bottom padding */
 
     /* ════════════════════════════════
